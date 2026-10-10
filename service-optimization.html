@@ -1,0 +1,919 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Service Optimization Assistant — SAP Service Cloud — Shishir Chandrakar</title>
+<style>
+  :root {
+    --black: #0a0a0a;
+    --white: #ffffff;
+    --off-white: #f7f6f3;
+    --muted: #6b6b6b;
+    --accent: #0070f3;
+    --accent-light: #e8f1ff;
+    --border: #e4e4e4;
+    --serif: 'Georgia', 'Times New Roman', serif;
+    --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
+    --mono: 'SF Mono', 'Fira Code', monospace;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--sans); background: var(--white); color: var(--black); line-height: 1.6; font-size: 17px; }
+
+  nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; height: 60px; background: rgba(255,255,255,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+  .nav-logo { font-size: 14px; font-weight: 600; letter-spacing: 0.02em; color: var(--black); text-decoration: none; }
+  .nav-back { font-size: 12px; color: var(--muted); text-decoration: none; letter-spacing: 0.02em; display: flex; align-items: center; gap: 6px; }
+  .nav-back:hover { color: var(--black); }
+  .nav-links { display: flex; gap: 32px; list-style: none; }
+  .nav-links a { font-size: 13px; color: var(--muted); text-decoration: none; letter-spacing: 0.02em; transition: color 0.2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--black); }
+
+  .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: flex-end; padding: 0 80px 80px; background: var(--black); color: var(--white); position: relative; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; background: radial-gradient(ellipse 80% 60% at 60% 40%, #001a4d 0%, #0a0a0a 70%); }
+  .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 60px 60px; }
+  .hero-content { position: relative; z-index: 2; max-width: 900px; }
+  .hero-eyebrow { font-size: 12px; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; color: #4d9fff; margin-bottom: 24px; }
+  .hero h1 { font-family: var(--serif); font-size: clamp(42px,6vw,80px); font-weight: 400; line-height: 1.08; letter-spacing: -0.02em; margin-bottom: 28px; }
+  .hero h1 em { font-style: italic; color: #7ab8ff; }
+  .hero-desc { font-size: 18px; color: rgba(255,255,255,0.55); max-width: 580px; line-height: 1.7; margin-bottom: 48px; }
+  .hero-meta { display: flex; gap: 48px; flex-wrap: wrap; }
+  .hero-meta-item label { display: block; font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.35); margin-bottom: 4px; }
+  .hero-meta-item span { font-size: 14px; color: rgba(255,255,255,0.75); font-weight: 500; }
+  .hero-scroll { position: absolute; bottom: 40px; right: 80px; display: flex; flex-direction: column; align-items: center; gap: 8px; color: rgba(255,255,255,0.3); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; }
+  .scroll-line { width: 1px; height: 48px; background: linear-gradient(to bottom, rgba(255,255,255,0.3), transparent); animation: scrollPulse 2s ease infinite; }
+  @keyframes scrollPulse { 0%,100% { opacity:0.3; } 50% { opacity:1; } }
+
+  section { padding: 120px 80px; }
+  section + section { border-top: 1px solid var(--border); }
+  .section-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--accent); margin-bottom: 16px; }
+  h2 { font-family: var(--serif); font-size: clamp(28px,3.5vw,44px); font-weight: 400; line-height: 1.15; letter-spacing: -0.02em; margin-bottom: 24px; }
+  h3 { font-size: 20px; font-weight: 600; line-height: 1.3; margin-bottom: 12px; letter-spacing: -0.01em; }
+  p { color: #3a3a3a; line-height: 1.75; max-width: 680px; }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: start; }
+  .pill-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+  .pill { font-size: 12px; font-weight: 500; padding: 5px 14px; border-radius: 100px; border: 1px solid var(--border); color: var(--muted); background: var(--white); }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(4,1fr); gap: 2px; background: var(--border); border: 1px solid var(--border); margin-top: 56px; }
+  .stat-item { background: var(--white); padding: 32px 28px; }
+  .stat-number { font-family: var(--serif); font-size: 40px; font-weight: 400; color: var(--black); line-height: 1; margin-bottom: 8px; }
+  .stat-label { font-size: 13px; color: var(--muted); line-height: 1.4; }
+
+  .pull-quote { border-left: 3px solid var(--accent); padding: 24px 32px; margin: 48px 0; background: var(--accent-light); border-radius: 0 8px 8px 0; }
+  .pull-quote blockquote { font-family: var(--serif); font-size: 22px; font-style: italic; color: var(--black); line-height: 1.6; max-width: none; }
+  .pull-quote cite { display: block; margin-top: 12px; font-size: 13px; color: var(--muted); font-style: normal; letter-spacing: 0.04em; }
+
+  .research-timeline { position: relative; margin-top: 64px; }
+  .research-timeline::before { content: ''; position: absolute; left: 24px; top: 0; bottom: 0; width: 1px; background: var(--border); }
+  .timeline-item { display: flex; gap: 40px; margin-bottom: 56px; padding-left: 64px; position: relative; }
+  .timeline-dot { position: absolute; left: 18px; top: 6px; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); border: 2px solid var(--white); outline: 1px solid var(--accent); }
+  .timeline-date { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; padding-top: 4px; min-width: 100px; }
+  .timeline-date.date-blue  { color: #0055cc; }
+  .timeline-date.date-green { color: #1a7a3c; }
+  .timeline-date.date-amber { color: #b06000; }
+  .timeline-body h3 { margin-bottom: 8px; }
+  .timeline-body p { font-size: 15px; }
+  .research-tag { display: inline-block; font-size: 11px; font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 10px; border-radius: 100px; margin-right: 6px; margin-bottom: 10px; }
+  .tag-blue { background: #e8f1ff; color: #0055cc; }
+  .tag-green { background: #e6f7ee; color: #1a7a3c; }
+  .tag-amber { background: #fff8e1; color: #b06000; }
+
+  .quote-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 48px; }
+  .user-quote { padding: 28px; background: var(--off-white); border-radius: 12px; border: 1px solid var(--border); position: relative; }
+  .user-quote::before { content: '\201C'; position: absolute; top: 16px; left: 20px; font-family: var(--serif); font-size: 48px; color: #ddd; line-height: 1; }
+  .user-quote p { font-family: var(--serif); font-style: italic; font-size: 15px; color: var(--black); padding-top: 24px; max-width: none; }
+  .user-quote cite { display: block; margin-top: 14px; font-size: 12px; color: var(--muted); font-style: normal; letter-spacing: 0.04em; }
+
+  .insight-list { margin-top: 64px; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .insight-item { background: var(--white); padding: 36px 48px; display: grid; grid-template-columns: 56px 1fr; gap: 28px; align-items: start; transition: background 0.15s; }
+  .insight-item:hover { background: #fafaf8; }
+  .insight-num { font-family: var(--serif); font-size: 32px; color: #e0e0e0; font-weight: 400; line-height: 1; padding-top: 2px; }
+  .insight-item h3 { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+  .insight-item p { font-size: 15px; max-width: none; margin-bottom: 12px; }
+  .insight-implication { font-size: 14px; color: var(--accent); font-style: italic; display: flex; gap: 8px; align-items: baseline; }
+  .insight-implication::before { content: '\2192'; font-style: normal; flex-shrink: 0; }
+
+  .domain-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 48px; }
+  .domain-card { padding: 40px; border: 1px solid var(--border); border-radius: 12px; background: var(--white); }
+  .domain-card-num { font-family: var(--serif); font-size: 56px; color: #f0f0f0; font-weight: 400; line-height: 1; margin-bottom: 20px; }
+  .domain-card h3 { font-size: 19px; margin-bottom: 10px; }
+  .domain-card p { font-size: 15px; max-width: none; }
+
+  .problem-col-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; }
+  .friction-list { list-style: none; padding: 0; margin-top: 24px; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .friction-item { background: var(--white); padding: 20px 24px; display: grid; grid-template-columns: 36px 1fr; gap: 16px; align-items: start; }
+  .friction-item-icon { font-size: 18px; padding-top: 2px; }
+  .friction-item h4 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .friction-item p { font-size: 14px; max-width: none; color: var(--muted); margin: 0; }
+
+  .challenge-callout { background: var(--black); color: var(--white); padding: 80px; text-align: center; border-radius: 12px; margin-top: 16px; }
+  .challenge-callout .section-label { color: rgba(255,255,255,0.35); justify-content: center; display: flex; }
+  .challenge-callout h2 { color: var(--white); font-size: clamp(22px,3vw,36px); margin: 0 auto; max-width: 720px; margin-bottom: 0; }
+  .challenge-callout h2 em { font-style: italic; color: #7ab8ff; }
+
+  .decision-card { border: 1px solid var(--border); border-radius: 12px; overflow: hidden; margin: 40px 0; }
+  .decision-card-header { padding: 18px 28px; background: var(--off-white); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 12px; }
+  .decision-card-tag { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); background: var(--accent-light); padding: 3px 10px; border-radius: 100px; white-space: nowrap; }
+  .decision-card-header h4 { font-size: 16px; font-weight: 600; margin: 0; }
+  .decision-card-body { display: grid; grid-template-columns: 1fr 1fr 1.2fr 1.2fr; }
+  .decision-cell { padding: 24px 28px; border-right: 1px solid var(--border); }
+  .decision-cell:last-child { border-right: none; }
+  .decision-cell-label { font-size: 10px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .decision-cell p { font-size: 14px; max-width: none; line-height: 1.65; }
+  .decision-cell ul { list-style: none; padding: 0; }
+  .decision-cell ul li { font-size: 13px; color: #4a4a4a; padding: 4px 0; border-bottom: 1px solid #f0f0f0; display: flex; gap: 8px; }
+  .decision-cell ul li:last-child { border-bottom: none; }
+  .decision-cell ul li::before { content: '\00B7'; color: var(--muted); flex-shrink: 0; }
+  .decision-cell.cell-decision { background: var(--accent-light); }
+  .decision-cell.cell-decision p { color: #003399; font-weight: 500; }
+  .decision-cell.cell-reasoning { background: #fafaf8; }
+
+  .outcome-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 24px; margin-top: 56px; }
+  .outcome-card { padding: 40px 32px; border-radius: 12px; background: var(--off-white); border: 1px solid var(--border); }
+  .outcome-num { font-family: var(--serif); font-size: 48px; font-weight: 400; color: var(--black); line-height: 1; margin-bottom: 8px; }
+  .outcome-label { font-size: 13px; color: var(--muted); margin-bottom: 14px; font-weight: 500; }
+  .outcome-card p { font-size: 14px; max-width: none; }
+  .outcome-usp { background: var(--black); color: var(--white); }
+  .outcome-usp .outcome-num { color: #7ab8ff; }
+  .outcome-usp .outcome-label { color: rgba(255,255,255,0.5); }
+  .outcome-usp p { color: rgba(255,255,255,0.7); max-width: none; }
+
+  .learning-list { margin-top: 48px; display: flex; flex-direction: column; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+  .learning-item { background: var(--white); padding: 32px 40px; display: grid; grid-template-columns: 48px 1fr; gap: 24px; align-items: start; }
+  .learning-num { font-family: var(--mono); font-size: 13px; color: var(--muted); padding-top: 3px; }
+  .learning-item h3 { font-size: 18px; margin-bottom: 8px; }
+  .learning-item p { font-size: 15px; max-width: none; }
+
+  .rationale-strip { display: grid; grid-template-columns: 1fr 1fr; gap: 0; margin-top: 40px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .rationale-cell { padding: 28px 32px; background: var(--white); }
+  .rationale-cell + .rationale-cell { border-left: 1px solid var(--border); }
+  .rationale-cell h5 { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .rationale-cell p { font-size: 14px; max-width: none; }
+
+  .proto-cta-block { background: var(--black); border-radius: 12px; padding: 64px 48px; text-align: center; margin-top: 48px; }
+  .proto-cta-block h3 { font-family: var(--serif); font-size: 28px; font-weight: 400; color: var(--white); margin-bottom: 12px; }
+  .proto-cta-block p { font-size: 15px; color: rgba(255,255,255,0.5); margin: 0 auto 28px; max-width: 440px; }
+  .proto-cta { display: inline-flex; align-items: center; gap: 10px; background: var(--accent); color: var(--white); font-size: 14px; font-weight: 600; letter-spacing: 0.02em; padding: 14px 32px; border-radius: 8px; text-decoration: none; transition: background 0.2s; }
+  .proto-cta:hover { background: #0060d3; }
+
+  .journey-steps { display: flex; flex-direction: column; gap: 20px; margin: 48px 0; }
+  .journey-step { padding: 28px 32px; border-radius: 8px; border-left: 4px solid var(--border); }
+  .journey-step.step-problem { border-left-color: #c53030; background: #fff8f8; }
+  .journey-step.step-detection { border-left-color: var(--accent); background: var(--accent-light); }
+  .journey-step.step-recommendation { border-left-color: #1a7a3c; background: #f0f9f4; }
+  .journey-step.step-completion { border-left-color: #6d4fc1; background: #f4f0ff; }
+  .journey-step-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 8px; }
+  .step-problem .journey-step-label { color: #c53030; }
+  .step-detection .journey-step-label { color: var(--accent); }
+  .step-recommendation .journey-step-label { color: #1a7a3c; }
+  .step-completion .journey-step-label { color: #6d4fc1; }
+  .journey-step h3 { font-size: 17px; font-weight: 600; margin-bottom: 8px; }
+  .journey-step p { font-size: 15px; max-width: none; margin: 0; }
+
+  .view-comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 32px 0; }
+
+  /* Demo video block */
+  .demo-block { margin: 48px 0; }
+  .demo-block-label { font-size: 11px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); margin-bottom: 16px; }
+  .demo-video-wrap { border-radius: 12px; overflow: hidden; border: 1px solid var(--border); background: #0a0a0a; box-shadow: 0 4px 32px rgba(0,0,0,0.12); }
+  .demo-video-wrap video { display: block; width: 100%; height: auto; }
+  .view-card { padding: 28px 32px; border: 1px solid var(--border); border-radius: 12px; background: var(--white); }
+  .view-card.view-featured { background: var(--accent-light); border-color: #b3d1ff; }
+  .view-card-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; }
+  .view-featured .view-card-label { color: var(--accent); }
+  .view-card h3 { font-size: 17px; font-weight: 600; margin-bottom: 10px; }
+  .view-card p { font-size: 14px; max-width: none; margin-bottom: 12px; }
+  .view-card ul { list-style: none; padding: 0; }
+  .view-card ul li { font-size: 14px; color: #3a3a3a; padding: 7px 0; border-bottom: 1px solid var(--border); display: flex; gap: 8px; align-items: baseline; }
+  .view-card ul li:last-child { border-bottom: none; }
+  .view-card ul li::before { content: '\2192'; color: var(--accent); font-size: 12px; flex-shrink: 0; }
+
+  footer { background: var(--black); color: rgba(255,255,255,0.4); padding: 64px 80px; display: flex; justify-content: space-between; align-items: center; }
+  .footer-name { font-family: var(--serif); font-size: 24px; color: rgba(255,255,255,0.8); font-style: italic; }
+  footer p { font-size: 13px; max-width: none; color: rgba(255,255,255,0.35); }
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 13px; color: rgba(255,255,255,0.4); text-decoration: none; }
+  .footer-links a:hover { color: rgba(255,255,255,0.8); }
+
+  .fade-in { opacity: 0; transform: translateY(20px); transition: opacity 0.65s ease, transform 0.65s ease; }
+  .fade-in.visible { opacity: 1; transform: translateY(0); }
+
+  @media (max-width: 1200px) {
+    .decision-card-body { grid-template-columns: 1fr 1fr; }
+    .decision-cell:nth-child(2) { border-right: none; }
+    .decision-cell:nth-child(1), .decision-cell:nth-child(2) { border-bottom: 1px solid var(--border); }
+  }
+  @media (max-width: 900px) {
+    nav { padding: 0 24px; }
+    .nav-links { gap: 20px; }
+    section { padding: 80px 24px; }
+    .hero { padding: 80px 24px 60px; min-height: auto; padding-top: 100px; }
+    .hero-meta { gap: 24px; }
+    .two-col, .domain-cards, .stat-grid, .quote-grid, .rationale-strip,
+    .outcome-grid, .view-comparison { grid-template-columns: 1fr; }
+    footer { padding: 48px 24px; flex-direction: column; gap: 20px; text-align: center; }
+    .challenge-callout { padding: 48px 24px; }
+    .proto-cta-block { padding: 40px 24px; }
+  }
+  @media (max-width: 640px) {
+    .nav-links { display: none; }
+    .decision-card-body { grid-template-columns: 1fr; }
+    .decision-cell { border-right: none; border-bottom: 1px solid var(--border); }
+    .decision-cell:last-child { border-bottom: none; }
+    .insight-item { grid-template-columns: 1fr; gap: 8px; }
+    .insight-num { font-size: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════
+     NAV
+═══════════════════════════════════════════ -->
+<nav>
+  <a href="index.html" class="nav-logo">Shishir Chandrakar</a>
+  <ul class="nav-links">
+    <li><a href="#overview">Overview</a></li>
+    <li><a href="#research">Research</a></li>
+    <li><a href="#solution">Solution</a></li>
+    <li><a href="#journeys">Journeys</a></li>
+    <li><a href="#outcomes">Outcomes</a></li>
+  </ul>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     HERO
+═══════════════════════════════════════════ -->
+<section class="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid"></div>
+  <div class="hero-content">
+    <p class="hero-eyebrow">Case Study 02 — SAP Customer Experience · Service Cloud</p>
+    <h1>Service <em>Optimization</em><br>Assistant</h1>
+    <p class="hero-desc">Helping service managers proactively address escalation risks, sentiment decline, and workforce gaps — before they become crises. An AI-powered concept built on evidence from five service managers and twelve enterprise customers.</p>
+    <div class="hero-meta">
+      <div class="hero-meta-item"><label>Role</label><span>Senior UX Designer</span></div>
+      <div class="hero-meta-item"><label>Product</label><span>SAP Service Cloud</span></div>
+      <div class="hero-meta-item"><label>Focus</label><span>Service Optimization Assistant</span></div>
+      <div class="hero-meta-item"><label>Research</label><span>June – July 2026</span></div>
+    </div>
+  </div>
+  <div class="hero-scroll"><div class="scroll-line"></div><span>Scroll</span></div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     01 — OVERVIEW
+═══════════════════════════════════════════ -->
+<section id="overview" style="background: var(--off-white);" class="fade-in">
+  <div class="section-label">01 — Overview</div>
+  <p style="font-family: var(--serif); font-size: clamp(19px,2.2vw,26px); line-height:1.55; color:var(--black); max-width:820px; margin-bottom:64px;">Every morning, a service manager opens their dashboard and faces the same problem: the data tells them what happened yesterday, not what is about to go wrong today. They piece together escalation risk from emails. They identify skill gaps by watching patterns over weeks. They build leadership reports by hand. This project began with a simple question — what if the system did all of that for them?</p>
+  <div class="two-col">
+    <div>
+      <h2>From reactive management to proactive intelligence</h2>
+      <p>Service managers in enterprise environments are responsible for customer sentiment, SLA health, escalation risk, agent performance, and workforce optimization — simultaneously, with incomplete information, across systems that don't talk to each other. The opportunity was to design an AI-powered assistant that continuously monitors operational signals and surfaces the right recommendation at the right moment — with enough reasoning for a manager to act confidently.</p>
+    </div>
+    <div>
+      <h3>My role</h3>
+      <p>I led design end-to-end on the Service Optimization Assistant — from research planning and facilitation through synthesis, strategy, and interaction design. I ran the moderated manager interviews, co-facilitated CTAB customer workshops, and designed both interaction models (Task View and AI Assistant) through to prototype validation with enterprise stakeholders.</p>
+      <div class="pill-row" style="margin-top: 20px;">
+        <span class="pill">User Research</span>
+        <span class="pill">Customer Workshops</span>
+        <span class="pill">AI Interaction Design</span>
+        <span class="pill">Prototyping</span>
+        <span class="pill">Experience Strategy</span>
+        <span class="pill">Design System</span>
+      </div>
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-item"><div class="stat-number">5</div><div class="stat-label">Service managers interviewed across 4 industries, 70-minute sessions</div></div>
+    <div class="stat-item"><div class="stat-number">12</div><div class="stat-label">CTAB enterprise stakeholders across Retail, SaaS, Government, Healthcare</div></div>
+    <div class="stat-item"><div class="stat-number">5/5</div><div class="stat-label">Universal AI desire — every research participant, unprompted</div></div>
+    <div class="stat-item"><div class="stat-number">2</div><div class="stat-label">Interaction models validated — Task View and AI Assistant</div></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     02 — THE PROBLEM
+═══════════════════════════════════════════ -->
+<section id="problem" style="background: var(--white);" class="fade-in">
+  <div class="section-label">02 — The Problem</div>
+  <h2>Service managers are fighting fires<br>they didn't need to start</h2>
+
+  <div class="pull-quote">
+    <blockquote>"I look at my mailbox for escalation mails, then check daily reports from past several days."</blockquote>
+    <cite>— Ant80, Financial Services, Service Manager · 3.5 years experience</cite>
+  </div>
+
+  <div class="two-col">
+    <div>
+      <div class="problem-col-label">Business Context</div>
+      <p>Enterprise service operations generate enormous volumes of operational data — case histories, sentiment scores, SLA timers, escalation chains, agent performance metrics — spread across disconnected systems. Service managers nominally have access to this information, but access and intelligence are not the same thing. The data is there. What's missing is the signal.</p>
+      <p style="margin-top: 16px;">The business consequence is measurable: missed escalations damage customer satisfaction scores, late SLA notifications leave no time to act, and skill gaps compound over weeks before becoming visible. The cost falls on both the customer relationship and the manager's time.</p>
+    </div>
+    <div>
+      <div class="problem-col-label">What managers experience every day</div>
+      <ul class="friction-list">
+        <li class="friction-item"><div class="friction-item-icon">📧</div><div><h4>Email as the primary alert system</h4><p>Despite purpose-built CRM tools, all five research participants check email first every morning for escalation signals — the tool they pay for isn't surfacing what matters.</p></div></li>
+        <li class="friction-item"><div class="friction-item-icon">🔁</div><div><h4>Stand-ups as workarounds</h4><p>Daily stand-up meetings exist partly to compensate for dashboard intelligence that doesn't proactively prioritize or contextualize. Human process is filling a product gap.</p></div></li>
+        <li class="friction-item"><div class="friction-item-icon">📋</div><div><h4>Reporting as a recurring tax</h4><p>4 of 5 managers spend significant time building leadership reports manually: Salesforce export → Excel → PowerPoint. Work they universally describe as low-value and automatable.</p></div></li>
+        <li class="friction-item"><div class="friction-item-icon">⏳</div><div><h4>Escalation discovered too late</h4><p>SLA breach alerts arrive with insufficient lead time to act. The system notifies at 90% of the window — when meaningful intervention is no longer possible.</p></div></li>
+        <li class="friction-item"><div class="friction-item-icon">🧩</div><div><h4>Knowledge gaps invisible until they escalate</h4><p>Agents handling cases outside their skill set generate unnecessary escalations for weeks before the pattern becomes visible to the manager.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     03 — RESEARCH & DISCOVERY
+═══════════════════════════════════════════ -->
+<section id="research" style="background: var(--off-white);" class="fade-in">
+  <div class="section-label">03 — Research &amp; Discovery</div>
+  <h2>Two rounds of research.<br>One consistent signal.</h2>
+  <p>The project ran two distinct research phases — deep discovery interviews with service managers, followed by prototype validation workshops with enterprise CTAB customers. Both independently confirmed the same core finding: managers are not resistant to AI. They are desperate for it. They just need it to be timely, transparent, and trustworthy.</p>
+
+  <div class="research-timeline">
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-date date-blue">Phase 1</div>
+      <div class="timeline-body">
+        <h3>Service Manager Discovery Research</h3>
+        <p>5 moderated 1-on-1 remote video interviews, 45–70 minutes each. Open workflow exploration followed by scenario tasks and an AI preference discussion. Participants spanned Life Sciences IT, IT/MNC, Financial Services, Telecom/Sales, and ISP/Broadband — representing teams from 8 to 200+ agents. Full transcripts captured alongside live observer notes. Research led by Shishir Chandrakar, Maggie Chen, Shilpa Santosh.</p>
+        <div class="pill-row" style="margin-top:12px;">
+          <span class="pill">5 participants · 4 industries</span>
+          <span class="pill">70 min avg. session</span>
+          <span class="pill">5/5 AI desire</span>
+          <span class="pill">Full transcript analysis</span>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-date date-green">Phase 2</div>
+      <div class="timeline-body">
+        <h3>CTAB Customer Workshops &amp; Prototype Testing</h3>
+        <p>12 enterprise stakeholders across Retail/E-Commerce, SaaS/Technology, Government/Public Sector, and Healthcare. Roles included IT Manager, Operations Manager, Support Team Lead. Two prototypes tested: Reassign Case (AI suggests a better-fit agent) and Recommended Learning (AI suggests training based on performance patterns). Two interaction models evaluated: Task View and AI Assistant. 7 participants completed a structured poll on daily pain points and AI reaction.</p>
+        <div class="pill-row" style="margin-top:12px;">
+          <span class="pill">12 participants · 4 industries</span>
+          <span class="pill">2 prototypes validated</span>
+          <span class="pill">Task View + AI Assistant</span>
+          <span class="pill">July 6–7, 2026</span>
+        </div>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-dot"></div>
+      <div class="timeline-date date-amber">Insight<br>Synthesis</div>
+      <div class="timeline-body">
+        <h3>Affinity Mapping &amp; Opportunity Definition</h3>
+        <p>Across both phases, themes were clustered through affinity mapping to identify the highest-frequency pain points and strongest AI opportunity areas. Seven evidence-backed findings emerged, each mapped directly to a design decision. The synthesis shaped both the product architecture — which agent types to build — and the interaction model — how much AI autonomy to grant at launch.</p>
+        <div class="pill-row" style="margin-top:12px;">
+          <span class="pill">7 key findings</span>
+          <span class="pill">5 design principles</span>
+          <span class="pill">4 agent types defined</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="quote-grid">
+    <div class="user-quote"><p>Monday morning: start with a remiss — any escalation, any priority ticket?</p><cite>— RockSolid55, IT Manager</cite></div>
+    <div class="user-quote"><p>If AI provides a summary: Agent A tried this, didn't work, Agent B tried… that would be helpful.</p><cite>— RockSolid55, IT Manager</cite></div>
+    <div class="user-quote"><p>I already lost the trust. The predictability should predict something down the line — not just in the next few hours.</p><cite>— Onamission23, Life Sciences IT</cite></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     04 — KEY FINDINGS
+═══════════════════════════════════════════ -->
+<section id="findings" style="background: var(--white);" class="fade-in">
+  <div class="section-label">04 — Key Findings</div>
+  <h2>Seven findings. Every one<br>shaped a design decision.</h2>
+  <p>These are not observations — they are design briefs. Each finding below is evidence-backed across the research programme, and each maps directly to a product decision that appears later in this case study.</p>
+
+  <div class="insight-list">
+    <div class="insight-item">
+      <div class="insight-num">01</div>
+      <div>
+        <h3>No single source of truth — fragmented daily triage</h3>
+        <p>All 5 managers begin their day manually piecing together information from email, dashboards, and stand-ups. No tool gives them a prioritised, ready-to-act morning view. The dashboard shows data, but it does not contextualize it or tell the manager what to do first.</p>
+        <div class="insight-implication">Design principle: the system should open with a prioritised intelligence view, not a data view.</div>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">02</div>
+      <div>
+        <h3>Escalation management is entirely reactive and manual</h3>
+        <p>Escalation paths exist but are manually tracked. Handovers require reading all prior communications — no summaries, no context. Backend team delays are invisible until critical. SLA breach notifications arrive too close to deadline to act meaningfully. 5/5 participants ranked escalation in their top-three pain points.</p>
+        <div class="insight-implication">Design principle: surface escalation risk earlier — at 50% of the SLA window, not 90%.</div>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">03</div>
+      <div>
+        <h3>AI summaries are the single most desired capability — unprompted</h3>
+        <p>Every participant independently requested AI-generated summaries — for calls, escalation threads, daily status, and leadership reports. This was the most consistently and spontaneously named AI desire across all five sessions. One manager spends hours weekly building PowerPoint reports from Salesforce exports.</p>
+        <div class="insight-implication">Design priority: AI-generated summaries should be the first capability shipped, not a future phase.</div>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">04</div>
+      <div>
+        <h3>'Why Richard?' — explainability is non-negotiable</h3>
+        <p>In a scenario task where AI recommended assigning 4 SLA-breaching cases to Richard, all 5 participants' first response was "why Richard?" — not "yes." Not one participant would act on an unexplained recommendation. Trust in AI is directly proportional to the quality of reasoning provided. Bigger teams correlated with higher openness to automation, but explainability remained constant across all team sizes.</p>
+        <div class="insight-implication">Constraint: explainability must ship with the recommendation — not as a v2 addition.</div>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">05</div>
+      <div>
+        <h3>Reporting is a recurring leadership tax on managers' time</h3>
+        <p>4/5 participants described manual report creation as a significant recurring burden. The typical workflow: Salesforce export → Excel transformation → PowerPoint. Leadership-specific data requires manual tailoring per audience. Even where leaders have dashboard access, they still request narrative context — which means managers are contextualizing data in person that could be automated.</p>
+        <div class="insight-implication">Opportunity: auto-generated leadership-ready reports with narrative context, triggered on demand.</div>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">06</div>
+      <div>
+        <h3>Product knowledge doesn't reach frontline agents fast enough</h3>
+        <p>In IT environments, the gap between where product knowledge lives (technical teams) and where it's needed (service agents) is the primary driver of unnecessary escalations. New product launches create acute knowledge crises. Trained agents move to new projects and expertise leaves with them — knowledge retention is fragile and unstructured.</p>
+        <div class="insight-implication">Opportunity: AI-powered knowledge assistant accessible to agents during ticket handling.</div>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">07</div>
+      <div>
+        <h3>Dashboards show the past — managers need to see what's coming</h3>
+        <p>Current dashboards are retrospective. Managers can see what has happened, but not what is about to happen. The absence of forecasting, pattern recognition, and proactive alerts forces managers into reactive firefighting mode — responding to crises rather than preventing them. 5/5 participants described this pattern independently.</p>
+        <div class="insight-implication">Core design challenge: shift the primary product posture from retrospective to predictive.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- DESIGN CHALLENGE -->
+<section style="background: var(--off-white); padding: 80px;" class="fade-in">
+  <div class="challenge-callout">
+    <div class="section-label">Design Challenge</div>
+    <h2>How do we shift service managers from <em>reactive firefighters</em> to proactive team leaders — without taking human judgment out of the loop?</h2>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     05 — DESIGN PRINCIPLES
+═══════════════════════════════════════════ -->
+<section id="principles" style="background: var(--white);" class="fade-in">
+  <div class="section-label">05 — Design Principles</div>
+  <h2>Five principles that governed<br>every design decision.</h2>
+  <p>These weren't generated from design intuition — each principle was reverse-engineered from a specific research finding. They served as a filter during design reviews: if a decision violated a principle, it needed a strong justification to proceed.</p>
+
+  <div class="insight-list">
+    <div class="insight-item">
+      <div class="insight-num">01</div>
+      <div>
+        <h3>Proactive over reactive</h3>
+        <p>The system should surface risk before it becomes a crisis. Surfacing an escalation risk at 50% of the SLA window gives the manager agency. Surfacing it at 90% gives them stress. Every insight should arrive early enough to act — not just early enough to notice.</p>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">02</div>
+      <div>
+        <h3>Explainability is the price of admission</h3>
+        <p>Without "Why?", there is no "Yes." Every AI recommendation must surface its reasoning in a form a manager can evaluate and challenge. This isn't a UX nicety — it is the single largest barrier to AI adoption in this context. An unexplained recommendation will be ignored or disabled. An explained one will be trusted and refined.</p>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">03</div>
+      <div>
+        <h3>Context before action</h3>
+        <p>The system should give managers enough context to understand a situation before asking them to act on it. An insight without context is just noise. Context means: what is happening, why it is happening, what the recommended action is, and what the projected outcome of that action looks like.</p>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">04</div>
+      <div>
+        <h3>Human in the loop — always</h3>
+        <p>AI recommends. Manager decides. Every action in the system requires explicit human confirmation before executing. This is not just a trust requirement — it is a reflection of the reality that AI cannot access soft context: an agent's recent personal circumstances, a customer's relationship history, a manager's institutional knowledge. The human override is not a safety net. It is a feature.</p>
+      </div>
+    </div>
+    <div class="insight-item">
+      <div class="insight-num">05</div>
+      <div>
+        <h3>Progressive trust — earn autonomy incrementally</h3>
+        <p>No manager wants full AI control on day one. The system should support a trust journey: the manager verifies early recommendations manually, builds confidence over time, and gradually grants the system more autonomy for low-stakes actions. The UI should make this trust configuration explicit and controllable — not something that happens to the manager, but something they consciously design.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     06 — SOLUTION OVERVIEW
+═══════════════════════════════════════════ -->
+<section id="solution" style="background: var(--off-white);" class="fade-in">
+  <div class="section-label">06 — Solution</div>
+  <h2>The Service Optimization<br>Assistant</h2>
+  <p>The Service Optimization Assistant is an AI-powered layer within SAP Service Cloud. It monitors operational signals continuously — customer sentiment, escalation risk, SLA proximity, agent skill coverage — and proactively surfaces recommendations with reasoning, evidence, and a clear path to action. Managers can interact through two models: a conversational AI Assistant for exploration, or a structured Task View for efficient batch decision-making.</p>
+
+  <div class="domain-cards" style="margin-top: 56px;">
+    <div class="domain-card">
+      <div class="domain-card-num">01</div>
+      <h3>Service Cloud Homepage Entry Point</h3>
+      <p>The existing SAP Service Cloud homepage gains a new Service Optimization Assistant card. It surfaces the most critical operational insight of the day — a proactive signal that draws the manager into the dashboard before they would have thought to look. The entry point is contextual: it shows a single sentence describing what requires attention and why, with a direct link to the full recommendation.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">02</div>
+      <h3>Dashboard — Four KPI Cards</h3>
+      <p>The dashboard opens with four real-time KPI cards: Sentiment Score (trending direction and current value vs. threshold), SLA Breach Risk (number of cases at risk and proximity), Team Availability (percentage of agents available versus peak demand), and Risk-Prone Cases (total cases flagged for proactive attention). Each card links to the relevant specialist agent below.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">03</div>
+      <h3>Four Specialist AI Agents</h3>
+      <p>Below the KPIs, four agent tabs focus on specific operational dimensions: the Sentiment Agent monitors customer satisfaction trends and flags cases with declining scores; the Escalation Agent tracks escalation risk and proactive handover needs; the Service Journey Agent optimizes case routing and coverage; and the Compliance Agent monitors SLA health and policy adherence.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">04</div>
+      <h3>Master-Detail Insight Layout</h3>
+      <p>Each agent renders insight cards — problem summaries with context, evidence, and a recommended action. Selecting a card expands the detail view: root cause analysis, affected cases with customer context, proposed actions with agent match scores, and a projected outcome if the recommendation is followed. Every detail view includes an info-dot system for inline explainability without overwhelming the primary view.</p>
+    </div>
+  </div>
+
+</section>
+
+<!-- ═══════════════════════════════════════════
+     07 — JOURNEY FLOW 1
+═══════════════════════════════════════════ -->
+<section id="journeys" style="background: var(--white);" class="fade-in">
+  <div class="section-label">07 — Journey Flow 1</div>
+  <h2>Address Low Sentiment Score —<br>Reassign Cases</h2>
+  <p>This is the primary scenario explored in customer workshops. It begins with a signal the manager would not have found on their own, and ends with a confident decision made in minutes rather than the hours of manual investigation it would have required before.</p>
+
+  <div class="journey-steps">
+    <div class="journey-step step-problem">
+      <div class="journey-step-label">The Situation</div>
+      <h3>Eight customers are in negative sentiment — and the manager doesn't know yet</h3>
+      <p>Eight cases have received negative sentiment scores from customers following service interactions. The average sentiment sits at -0.6, below the acceptable threshold of -0.5. The common thread: all eight were assigned to general support agents handling billing queries outside their specialist skillset. Left unaddressed, each case risks escalation and further satisfaction damage. Without proactive AI monitoring, this pattern would remain invisible until a customer complaint surfaced it.</p>
+    </div>
+    <div class="journey-step step-detection">
+      <div class="journey-step-label">AI Detection</div>
+      <h3>The Service Optimization Assistant surfaces the insight on the homepage</h3>
+      <p>The manager logs in. Before they reach for email, the homepage card reads: "8 cases with customers in negative sentiment require attention — root cause identified." The card quantifies the problem, names the root cause (misrouted cases lacking billing expertise), and gives a projected outcome: sentiment score projected to improve by +1.0 after reassignment. The manager selects the card and enters the Sentiment Agent view.</p>
+    </div>
+    <div class="journey-step step-recommendation">
+      <div class="journey-step-label">The Recommendation</div>
+      <h3>AI identifies four billing specialists and explains why each one</h3>
+      <p>The dashboard presents two paths: AI Assistant for conversational exploration, or Task View for structured decision-making. In both, the AI has already done the work: it identified four billing specialists — Richard Williams, John Doe, James H., and Lisa R. — based on past case resolution rates, current availability, handle time benchmarks, and queue capacity. Each agent carries a fit classification: Best Fit, Good Fit, or Not a Good Fit. The classification system was validated by CTAB participants as "very clear, allows for fast decision-making."</p>
+    </div>
+    <div class="journey-step step-completion">
+      <div class="journey-step-label">Decision &amp; Outcome</div>
+      <h3>Manager reviews, adjusts if needed, and confirms — cases reassigned in one action</h3>
+      <p>The manager reviews the proposed assignments. They can challenge any recommendation — the "Why?" panel expands to show the specific data behind each agent selection. They can explore what-if scenarios: "What if Richard is unavailable this week?" — the system recalculates and proposes the next-best option. Once satisfied, a single confirmation reassigns all eight cases. The system posts a completion state: 8 cases reassigned, projected sentiment improvement +1.0, change logged for review.</p>
+    </div>
+  </div>
+
+  <div class="demo-block">
+    <div class="demo-block-label">Prototype walkthrough — Sentiment Agent &amp; Case Reassignment</div>
+    <div class="demo-video-wrap">
+      <video autoplay loop muted playsinline>
+        <source src="assets/sentiment-agent.webm" type="video/webm">
+        <source src="assets/sentiment-agent.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <div class="decision-card">
+    <div class="decision-card-header">
+      <span class="decision-card-tag">AI Assistant View</span>
+      <h4>Conversational exploration — understanding before acting</h4>
+    </div>
+    <div class="decision-card-body">
+      <div class="decision-cell">
+        <div class="decision-cell-label">What the AI says</div>
+        <p>A plain-language narrative: what is happening, why it's happening, which agents are proposed, and what the projected outcome looks like if the manager follows the recommendation.</p>
+      </div>
+      <div class="decision-cell">
+        <div class="decision-cell-label">What-if exploration</div>
+        <p>Manager can ask: "What if Richard is unavailable?" — AI recalculates and presents alternatives with updated projections. No dead ends. Every constraint has a response.</p>
+      </div>
+      <div class="decision-cell cell-reasoning">
+        <div class="decision-cell-label">Why this interaction model</div>
+        <p>Research showed that managers who distrust a recommendation need to explore it before committing. The conversational model supports the "verify first, then trust" pattern that emerged consistently across all five research sessions.</p>
+      </div>
+      <div class="decision-cell cell-decision">
+        <div class="decision-cell-label">Design rationale</div>
+        <p>The AI Assistant does not ask questions before presenting a recommendation — it leads with the plan and invites challenge. This respects the manager's time while preserving their ability to probe.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="decision-card">
+    <div class="decision-card-header">
+      <span class="decision-card-tag">Task View</span>
+      <h4>Structured decision-making — evidence visible at every step</h4>
+    </div>
+    <div class="decision-card-body">
+      <div class="decision-cell">
+        <div class="decision-cell-label">What the manager sees</div>
+        <p>A card-based list of proposed case assignments. Each row shows the case, the proposed agent, their fit classification, resolution rate, current queue size, and average handle time — all the evidence in one scan.</p>
+      </div>
+      <div class="decision-cell">
+        <div class="decision-cell-label">Inline explainability</div>
+        <p>Every agent row carries an info dot. Hovering reveals the specific reasoning: "Resolved 14 similar billing cases last quarter — 92% first-contact resolution. Currently has 3 open cases." No modal, no navigation away.</p>
+      </div>
+      <div class="decision-cell cell-reasoning">
+        <div class="decision-cell-label">Why this interaction model</div>
+        <p>The CTAB poll found 5/7 participants said "figuring out agent workload and assignments" takes the most time that it shouldn't. Task View compresses that work from minutes of manual lookup into a single view — while keeping human approval explicit.</p>
+      </div>
+      <div class="decision-cell cell-decision">
+        <div class="decision-cell-label">Validated insight</div>
+        <p>CTAB participants called the fit classification (Best / Good / Not So Good) "very clear, allows for fast decision-making." This one component directly addressed the time cost of workload assessment.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="view-comparison">
+    <div class="view-card">
+      <div class="view-card-label">Task View — best for</div>
+      <h3>Efficient batch decisions</h3>
+      <p>When the manager trusts the recommendation category and wants to review evidence quickly before confirming.</p>
+      <ul>
+        <li>Full case list with agent fit scores visible at a glance</li>
+        <li>Inline info dots for on-demand reasoning</li>
+        <li>Individual case modifications before bulk confirm</li>
+        <li>Completion state with outcome summary</li>
+      </ul>
+    </div>
+    <div class="view-card view-featured">
+      <div class="view-card-label">AI Assistant View — best for</div>
+      <h3>Exploratory understanding</h3>
+      <p>When the manager wants to probe before committing — understanding root cause, challenging assumptions, or exploring alternatives.</p>
+      <ul>
+        <li>Narrative explanation of the problem and proposed plan</li>
+        <li>What-if scenario exploration with updated projections</li>
+        <li>Conversational follow-up questions supported</li>
+        <li>Escalates to Task View for final confirmation</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     08 — JOURNEY FLOW 2
+═══════════════════════════════════════════ -->
+<section id="journey2" style="background: var(--off-white);" class="fade-in">
+  <div class="section-label">08 — Journey Flow 2</div>
+  <h2>Recommend Training for Agents<br>Causing Escalations</h2>
+  <p>This scenario addresses the knowledge gap finding from research — the pattern where agents escalate cases not because of poor performance but because they lack specialist training for the case type they've been assigned. The AI detects this pattern, names the root cause, and proposes a targeted training intervention before the escalation volume grows further.</p>
+
+  <div class="journey-steps">
+    <div class="journey-step step-problem">
+      <div class="journey-step-label">Pattern Detection</div>
+      <h3>Six agents are driving the majority of this week's billing escalations</h3>
+      <p>The Escalation Agent has identified that six agents are responsible for 73% of this week's billing-related escalations. The critical distinction: these are not underperforming agents. Their resolution rates on non-billing cases are within normal range. The pattern is a training gap — they were assigned billing cases they were never equipped to handle. Without this pattern recognition, a manager would likely interpret escalation volume as a performance problem and respond with the wrong intervention.</p>
+    </div>
+    <div class="journey-step step-detection">
+      <div class="journey-step-label">Root Cause Analysis</div>
+      <h3>AI separates skill gap from performance problem</h3>
+      <p>The AI's analysis surfaces a specific finding: the six agents' escalation rate on billing cases is 4.2x their escalation rate on general support cases. The system maps this against training records and confirms none of the six have completed the Billing Specialist Level 2 module. The AI names this explicitly: "Agents are driving the majority of escalations — not because they are poor agents, but because they are handling billing cases they haven't been trained for."</p>
+    </div>
+    <div class="journey-step step-recommendation">
+      <div class="journey-step-label">Training Plan</div>
+      <h3>AI matches each agent to a targeted 2-hour training module</h3>
+      <p>The system proposes enrolling all six agents in the Billing Specialist Level 2 training module — 2 hours, self-paced. Based on historical resolution data from agents who completed the same module last quarter, the projected impact is a meaningful escalation reduction within three weeks of completion. The AI presents the plan in both views: as a narrative explanation (AI Assistant) and as an agent-by-agent enrollment list (Task View) with each agent's escalation count and matched module visible.</p>
+    </div>
+    <div class="journey-step step-completion">
+      <div class="journey-step-label">Enrollment &amp; Expected Impact</div>
+      <h3>Manager confirms, agents are notified, impact is projected</h3>
+      <p>The manager reviews the six-agent plan. They can exclude any agent (with reason), swap modules, or adjust timing. On confirmation, the system enrolls all six agents, sends notifications with module links, and creates a 30-day follow-up review in the manager's calendar. The completion state shows: 6 agents enrolled, training module linked, expected escalation reduction logged as a tracked outcome for the next monthly review cycle.</p>
+    </div>
+  </div>
+
+  <div class="demo-block">
+    <div class="demo-block-label">Prototype walkthrough — Escalation Agent &amp; Training Recommendation</div>
+    <div class="demo-video-wrap">
+      <video autoplay loop muted playsinline>
+        <source src="assets/escalation-agent.webm" type="video/webm">
+        <source src="assets/escalation-agent.mp4" type="video/mp4">
+      </video>
+    </div>
+  </div>
+
+  <div class="decision-card">
+    <div class="decision-card-header">
+      <span class="decision-card-tag">Key Design Decision</span>
+      <h4>Naming the root cause before proposing the action</h4>
+    </div>
+    <div class="decision-card-body">
+      <div class="decision-cell">
+        <div class="decision-cell-label">The problem with skipping context</div>
+        <p>An AI that says "I recommend training for these 6 agents" without explaining why invites the manager to assume performance issues — a misdiagnosis that damages team trust and morale.</p>
+      </div>
+      <div class="decision-cell">
+        <div class="decision-cell-label">The design response</div>
+        <p>The insight card leads with root cause identification before the recommendation. The manager understands the situation before being asked to act — consistent with the "context before action" principle.</p>
+      </div>
+      <div class="decision-cell cell-reasoning">
+        <div class="decision-cell-label">Research foundation</div>
+        <p>Finding 06 directly identified knowledge gaps as the #1 pain point for Onamission23: "Replacing the knowledge base with an AI agent to find information before doing escalations."</p>
+      </div>
+      <div class="decision-cell cell-decision">
+        <div class="decision-cell-label">CTAB validation</div>
+        <p>Workshop participants confirmed human-in-the-loop approval was essential for both scenarios. Participants would not act on recommendations without first understanding why — this design puts the why first.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     09 — DESIGNING TRUST IN AI
+═══════════════════════════════════════════ -->
+<section id="trust" style="background: var(--white);" class="fade-in">
+  <div class="section-label">09 — Designing Trust in AI</div>
+  <h2>Trust is designed,<br>not assumed.</h2>
+  <p>The most important finding across both research phases was that managers are not sceptical of AI in principle. They are sceptical of AI that acts without explaining itself. The design challenge was not to convince managers to trust AI — it was to make the AI trustworthy enough to deserve trust. Every mechanism below was derived from a specific research finding.</p>
+
+  <div class="pull-quote">
+    <blockquote>"Why Richard? I need info on why it is recommending. I cannot assign just by recommendation."</blockquote>
+    <cite>— Ant80, Financial Services · the 'Why Richard?' scenario, Service Manager Research, June 2026</cite>
+  </div>
+
+  <div class="domain-cards">
+    <div class="domain-card">
+      <div class="domain-card-num">01</div>
+      <h3>Info Dots — Inline Evidence on Demand</h3>
+      <p>Every agent card and recommendation carries a small info dot. Hovering reveals the specific data points that generated the recommendation: case history, resolution rate, current capacity, and past performance on similar case types. The evidence is available without leaving the view or navigating away. Quick reasoning check — escalate to AI chat if more depth is needed. CTAB participants validated this pattern as the right interaction model.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">02</div>
+      <h3>Fit Classification — Best, Good, Not So Good</h3>
+      <p>Rather than a numerical score, agent recommendations use a plain-language fit classification: Best Fit, Good Fit, Not a Good Fit. This was a deliberate decision to reduce cognitive load and support fast scanning. CTAB participants called it "very clear, allows for fast decision-making" — the classification maps directly to a decision (assign / consider / skip) without requiring interpretation of a confidence percentage.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">03</div>
+      <h3>Projected Impact — Quantified Before Committing</h3>
+      <p>Every recommendation includes a projected outcome statement before the manager takes action: "Sentiment score projected to improve by +1.0 — from -0.2 to +0.8, based on historical resolution data from similar case reassignments." This gives managers a concrete reason to act — and a measurable outcome to hold the AI accountable to after the fact. Projection is surfaced as an estimate, not a guarantee.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">04</div>
+      <h3>What-If Scenarios — Challenge Any Recommendation</h3>
+      <p>In the AI Assistant view, managers can ask counterfactual questions: "What if Richard is unavailable?" "What if we only reassign four of the eight cases?" The system responds with recalculated recommendations and updated projections. This interaction was designed specifically in response to the research finding that managers believe human knowledge of their team exceeds what AI can see in data — the what-if interface acknowledges that asymmetry.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">05</div>
+      <h3>Human Approval Before Every Action</h3>
+      <p>No action in the system executes without an explicit manager confirmation. This is non-negotiable — every CTAB participant and every research participant stated that human-in-the-loop control is essential. The confirmation step is not a friction point: it is the moment of human ownership that makes the AI a collaborator rather than an operator. The system records who approved what and when, creating an auditable decision trail.</p>
+    </div>
+    <div class="domain-card">
+      <div class="domain-card-num">06</div>
+      <h3>AI Autonomy Settings — Progressive Trust Configuration</h3>
+      <p>The system includes a configurable AI autonomy panel — manager-set trust levels by action type. At launch: alert-only for all recommendations. Over time, the manager can elevate specific action types: auto-assign routine tickets, auto-escalate after N hours, alert-only for SLA risk. Trust is built through use, and the manager controls the pace of that trust. This directly addresses the finding that no participant wanted full AI control on day one.</p>
+    </div>
+  </div>
+
+  <div class="rationale-strip">
+    <div class="rationale-cell">
+      <h5>What the CTAB told us</h5>
+      <p>All 12 participants stated that human-in-the-loop is an important feature in the use of AI. Participants would never act on recommendations without first understanding why. The design gathered very positive feedback overall — both prototypes tackled the main pain point of service agents: agent workload and unresolved case follow-ups.</p>
+    </div>
+    <div class="rationale-cell">
+      <h5>What we built in response</h5>
+      <p>The entire explainability system — info dots, fit classification, projected impact, what-if scenarios — was designed to answer "Why?" before the manager has to ask. The goal was to make the AI's reasoning legible enough that the manager's first instinct shifts from "Why?" to "Yes, and here's what I'd change."</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     10 — OUTCOMES
+═══════════════════════════════════════════ -->
+<section id="outcomes" style="background: var(--off-white);" class="fade-in">
+  <div class="section-label">10 — Outcomes</div>
+  <h2>Research validation and<br>prototype reception.</h2>
+  <p>Since the Service Optimization Assistant is a concept validated through prototype research rather than a shipped product, outcomes are reported as: what the research confirmed, how the prototype was received, and what the expected business and user impact would be at scale.</p>
+
+  <div class="outcome-grid">
+    <div class="outcome-card outcome-usp">
+      <div class="outcome-num">5/5</div>
+      <div class="outcome-label">Universal AI desire</div>
+      <p>Every research participant independently requested AI capabilities — across different industries, team sizes, and geographies. The demand was not prompted by a feature list. It surfaced naturally as the sessions explored pain points.</p>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">12</div>
+      <div class="outcome-label">CTAB customers validated the design</div>
+      <p>Both prototypes received positive reception across Retail, SaaS, Government, and Healthcare. The human-in-the-loop model was explicitly validated as "the right approach for now" — language that confirms both current fit and an implied path toward higher AI autonomy over time.</p>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">5/7</div>
+      <div class="outcome-label">Top time sink confirmed</div>
+      <p>"Figuring out agent workload and assignments" was the most frequently cited time drain in the CTAB poll — named by 5 of 7 poll respondents. Both prototypes directly targeted this problem. The alignment between research finding and prototype reception confirmed the design was solving the right problem.</p>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">~40%</div>
+      <div class="outcome-label">Expected escalation reduction</div>
+      <p>Based on historical resolution data from agents who completed targeted training modules, the training recommendation flow is projected to reduce billing-related escalations by approximately 40% within 30 days of implementation — if followed consistently.</p>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">3–5 hrs</div>
+      <div class="outcome-label">Weekly time reclaimed per manager</div>
+      <p>AI-generated summaries, auto-populated leadership reports, and proactive escalation detection are projected to reclaim 3–5 hours per manager per week currently spent on manual investigation, report creation, and reactive triage.</p>
+    </div>
+    <div class="outcome-card">
+      <div class="outcome-num">Day 1</div>
+      <div class="outcome-label">Explainability ships with recommendation</div>
+      <p>A key constraint confirmed by both research phases: explainability cannot be a v2 feature. The design ensures that every recommendation ships with its reasoning visible — the trust layer is not an enhancement, it is the foundation.</p>
+    </div>
+  </div>
+
+  <div style="margin-top: 48px; padding: 40px; background: var(--white); border: 1px solid var(--border); border-radius: 12px;">
+    <p style="font-family: var(--serif); font-size: 20px; font-style: italic; color: var(--black); max-width: none; line-height: 1.65; text-align: center;">"These managers are not resistant to AI — they are desperate for it. They just need it to be timely, transparent, and trustworthy."</p>
+    <p style="font-size: 13px; color: var(--muted); text-align: center; margin-top: 12px; max-width: none;">— Research conclusion, Service Manager Discovery Research, June 2026</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     11 — REFLECTION
+═══════════════════════════════════════════ -->
+<section id="reflection" style="background: var(--white);" class="fade-in">
+  <div class="section-label">11 — Reflections &amp; Learnings</div>
+  <h2>What enterprise AI<br>taught me.</h2>
+
+  <div class="learning-list">
+    <div class="learning-item">
+      <div class="learning-num">01</div>
+      <div>
+        <h3>The "Why Richard?" moment is a design requirement, not user resistance</h3>
+        <p>When all five research participants independently asked "Why Richard?" before accepting the AI recommendation, my first instinct was to see it as a trust barrier to overcome. The real insight was different: their question was correct. AI should be required to explain itself. The question wasn't a problem with the user — it was a specification for the product. I built the explainability system to answer that question before it gets asked.</p>
+      </div>
+    </div>
+    <div class="learning-item">
+      <div class="learning-num">02</div>
+      <div>
+        <h3>Human-in-the-loop is a feature, not a limitation</h3>
+        <p>There is a version of this product where AI acts autonomously and the manager reviews outcomes. That version would fail. Not because managers are conservative, but because AI genuinely cannot see the soft context they hold: an agent's recent health issue, a customer's long-term relationship, institutional knowledge built over years. Designing explicit human approval wasn't a concession to user anxiety — it was acknowledging a real information asymmetry the AI cannot resolve.</p>
+      </div>
+    </div>
+    <div class="learning-item">
+      <div class="learning-num">03</div>
+      <div>
+        <h3>Customer workshops changed the design more than the research interviews</h3>
+        <p>The Phase 1 interviews identified what was broken. The CTAB workshops showed us which design decisions were actually working and which needed rethinking. Seeing the fit classification receive immediate positive response ("very clear, allows for fast decision-making") confirmed a design choice I was uncertain about. Seeing data scope concerns ("only Service Cloud — upstream context is missing") defined a technical requirement that needed to appear in the roadmap, not a future sprint.</p>
+      </div>
+    </div>
+    <div class="learning-item">
+      <div class="learning-num">04</div>
+      <div>
+        <h3>Progressive trust is a product architecture decision, not a UX pattern</h3>
+        <p>The AI autonomy settings panel was initially conceived as a settings screen — a UX detail. During synthesis, I realised it was actually a product architecture decision: the system needs to be built assuming low initial trust, with a clear path to higher trust that the manager controls. That changes how recommendations are phrased, how actions are logged, and what data the system needs to surface over time to earn the next level of autonomy. It affected the entire product model, not just one screen.</p>
+      </div>
+    </div>
+    <div class="learning-item">
+      <div class="learning-num">05</div>
+      <div>
+        <h3>Future opportunity: closing the upstream data gap</h3>
+        <p>The most consistent concern from CTAB customers was that the AI only sees Service Cloud data — upstream context from sales, contracts, and customer history is missing. This limits prediction accuracy and occasionally generates recommendations that don't account for the full customer relationship. The next phase of this work should prioritize integration APIs that bring upstream signals into the model. A recommendation grounded in partial context is better than none — but a recommendation that can see the whole customer is meaningfully more trustworthy.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════
+     FOOTER
+═══════════════════════════════════════════ -->
+<footer>
+  <div>
+    <div class="footer-name">Shishir Chandrakar</div>
+    <p style="margin-top: 8px;">Senior UX Designer · SAP SE · Service Cloud</p>
+  </div>
+  <div class="footer-links">
+    <a href="index.html">&#8592; Back to Case Study 01</a>
+  </div>
+  </div>
+</footer>
+
+<script>
+  const fadeEls = document.querySelectorAll('.fade-in');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.08, rootMargin: '0px 0px -40px 0px' });
+  fadeEls.forEach(el => observer.observe(el));
+
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+  const navObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(link => link.classList.remove('active'));
+        const active = document.querySelector(`.nav-links a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { threshold: 0.4 });
+  sections.forEach(s => navObserver.observe(s));
+</script>
+</body>
+</html>
